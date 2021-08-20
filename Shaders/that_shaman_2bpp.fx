@@ -106,13 +106,13 @@ float3 getColorValue(float2 texcoord, float x, float y) {
 	if (dither) {
 		bool odd = false;
 
-		if (y % (Scale.y * 2) == 0) {
-			if (x % (Scale.x * 2) == 0) {
+		if (y % (pow(2, Scale.y - 1) * 2) == 0) {
+			if (x % (pow(2, Scale.x - 1) * 2) == 0) {
 				grayscale += 0.125;
 			}
 		}
 		else {
-			if ((x + Scale.x) % (Scale.x * 2) == 0) {
+			if ((x + pow(2, Scale.x - 1)) % (pow(2, Scale.x - 1) * 2) == 0) {
 				grayscale += 0.125;
 			}
 		}
