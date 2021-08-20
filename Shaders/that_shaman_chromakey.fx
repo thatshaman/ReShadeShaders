@@ -15,7 +15,7 @@ uniform float Near <
 	ui_min = -RESHADE_DEPTH_LINEARIZATION_FAR_PLANE; 
 	ui_max = RESHADE_DEPTH_LINEARIZATION_FAR_PLANE;
 	ui_step = 1.0;
-	ui_label = "Near plane";
+	ui_label = "Near Plane";
 	ui_tooltip = "Depth cutoff near the camera";
 > = 0;
 
@@ -24,46 +24,61 @@ uniform float Far <
 	ui_min = 0.0; 
 	ui_max = RESHADE_DEPTH_LINEARIZATION_FAR_PLANE;
 	ui_step = 1.0;
-	ui_label = "Far plane";
+	ui_label = "Far Plane";
 	ui_tooltip = "Depth cutoff away from the camera";
 > = RESHADE_DEPTH_LINEARIZATION_FAR_PLANE;
 
 uniform bool RemoveFlatSurfaces <
-	ui_label = "Remove flat surfaces (experimental)";
+	ui_label = "Remove Flat Surfaces (Experimental)";
 	ui_tooltip = "Tries to remove flat surfaces";
 > = false;
 
 uniform float3 FlatSurfaceUp <
-	ui_label = "Flat surface normal";
+	ui_label = "Flat Surface Normal";
 	ui_type = "color";
 > = float3( 0.51, 0.7, 0.51);
 
 uniform int FlatSurfaceIterations <
-	ui_label = "Flat surface sample count";
+	ui_label = "Flat Surface Sample Count";
 	ui_type = "slider";
 	ui_min = 1;
 	ui_max = 16;
 > = int(4);
 
 uniform float FlatSurfaceScreenCutoff <
-	ui_label = "Flat surface vertical screen cutoff";
+	ui_label = "Flat Surface Vertical Screen Cutoff";
 	ui_type = "slider";
 	ui_min = 0.0;
 	ui_max = 1.0;
 > = float(0.5);
 
 uniform bool ShowDebug <
-	ui_label = "Show debug color output";
+	ui_label = "Show Debug Output";
 > = false;
 
 
 float GetDepth(float2 texcoord, float near, float far)
 {
+#if RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN
+	texcoord.y = 1 - texcoord.y;
+#endif
+
+	float depth = ReShade::GetLinearizedDepth(texcoord);
+
+#if RESHADE_DEPTH_INPUT_IS_LOGARITHMIC
+	const float C = 0.01;
+	depth = (exp(depth * log(C + 1.0)) - 1.0) / C;
+#endif
+
+#if RESHADE_DEPTH_INPUT_IS_REVERSED
+	depth = 1.0 - depth;
+#endif
+
 	float max = (1 / RESHADE_DEPTH_LINEARIZATION_FAR_PLANE) * far;
 	float min = (1 / RESHADE_DEPTH_LINEARIZATION_FAR_PLANE) * near;
-
 	if (min > max) min = max - 0.0001;
-	return clamp((ReShade::GetLinearizedDepth(texcoord) - min) / (max - min), 0, 1);
+
+	return clamp((depth - min) / (max - min), 0, 1);
 }
 
 float3 ScreenSpaceNormal(float2 texcoord)

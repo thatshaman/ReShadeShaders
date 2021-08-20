@@ -9,7 +9,7 @@ uniform float Near <
 	ui_min = -RESHADE_DEPTH_LINEARIZATION_FAR_PLANE;
 	ui_max = RESHADE_DEPTH_LINEARIZATION_FAR_PLANE;
 	ui_step = 0.1;
-	ui_label = "Near plane";
+	ui_label = "Near Plane";
 	ui_tooltip = "Depth cutoff near the camera";
 > = 0;
 
@@ -18,7 +18,7 @@ uniform float Far <
 	ui_min = 0.0;
 	ui_max = RESHADE_DEPTH_LINEARIZATION_FAR_PLANE;
 	ui_step = 0.1;
-	ui_label = "Far plane";
+	ui_label = "Far Plane";
 	ui_tooltip = "Depth cutoff away from the camera";
 > = RESHADE_DEPTH_LINEARIZATION_FAR_PLANE;
 
@@ -34,11 +34,26 @@ uniform bool Invert <
 
 float GetDepth(float2 texcoord, float near, float far)
 {
+#if RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN
+		texcoord.y = 1 - texcoord.y;
+#endif
+	
+	float depth = ReShade::GetLinearizedDepth(texcoord);
+
+#if RESHADE_DEPTH_INPUT_IS_LOGARITHMIC
+	const float C = 0.01;
+	depth = (exp(depth * log(C + 1.0)) - 1.0) / C;
+#endif
+
+#if RESHADE_DEPTH_INPUT_IS_REVERSED
+	depth = 1.0 - depth;
+#endif
+
 	float max = (1 / RESHADE_DEPTH_LINEARIZATION_FAR_PLANE) * far;
 	float min = (1 / RESHADE_DEPTH_LINEARIZATION_FAR_PLANE) * near;
-
 	if (min > max) min = max - 0.0001;
-	return clamp((ReShade::GetLinearizedDepth(texcoord) - min) / (max - min), 0, 1);
+
+	return clamp((depth - min) / (max - min), 0, 1);
 }
 
 float3 PS_Depthmask(float4 vpos : SV_Position, float2 texcoord : TEXCOORD0) : SV_Target
