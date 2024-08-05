@@ -173,7 +173,7 @@ float3 PS_Chromakey(float4 vpos : SV_Position, float2 texcoord : TEXCOORD0) : SV
                 float offsetY = -(ReShade::PixelSize.y * FlatSurfaceIterations.y / 2) + (ReShade::PixelSize.y * y);
                 for (int x = 0; x < FlatSurfaceIterations.x; x++)
                 {
-                    float offsetX = -(ReShade::PixelSize.x * FlatSurfaceIterations.y / 2) + (ReShade::PixelSize.x * x);
+                    float offsetX = -(ReShade::PixelSize.x * FlatSurfaceIterations.x / 2) + (ReShade::PixelSize.x * x);
                     normal += ScreenSpaceNormal(float2(texcoord.x - offsetX, texcoord.y - offsetY));
                 }
             }
