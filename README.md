@@ -11,7 +11,9 @@ Place the .fx files in your shader folder and activate them in your ReShade base
 These shaders require the following `Preprocessor Definitions` to be set:
 
 `RESHADE_DEPTH_INPUT_IS_UPSIDE_DOWN=0`
+
 `RESHADE_DEPTH_INPUT_IS_REVERSED=0`
+
 `RESHADE_DEPTH_INPUT_IS_LOGARITHMIC=0`
 
 # Shaders
